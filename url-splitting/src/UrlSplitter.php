@@ -1,7 +1,7 @@
 <?php
 
-class UrlSplitter
-{
+class UrlSplitter {
+
     public function split($url)
     {              
         return [
@@ -20,7 +20,7 @@ class UrlSplitter
 
     public function domain($url)
     {
-        preg_match('/(?<=:\/\/)[a-z][a-z|\.|0-9|-]+[a-z]{2,5}/', $url, $matches);
+        preg_match('/(?<=:\/\/)[a-z0-9][a-z\.0-9-]+[a-z0-9]{2,5}/', $url, $matches);
 
         if(empty($matches)) throw new InvalidArgumentException();
 
@@ -33,4 +33,5 @@ class UrlSplitter
 
         return (empty($matches[0])) ? '' : $matches[0];
     }
+
 }

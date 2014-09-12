@@ -3,8 +3,8 @@
 use PhpSpec\ObjectBehavior;
 use Prophecy\Argument;
 
-class UrlSplitterSpec extends ObjectBehavior
-{
+class UrlSplitterSpec extends ObjectBehavior {
+
     function it_is_initializable()
     {
         $this->shouldHaveType('UrlSplitter');
@@ -50,6 +50,18 @@ class UrlSplitterSpec extends ObjectBehavior
     {
         $url = 'google';
         $this->shouldThrow('InvalidArgumentException')->duringDomain($url);
+    }
+
+    public function it_accepts_a_domain_starting_with_numbers()
+    {
+        $url = 'http://11.google.com';
+        $this->domain($url)->shouldBe('11.google.com');
+    }
+
+    public function it_accepts_a_domain_ending_with_numbers()
+    {
+        $url = 'http://www.google11.com';
+        $this->domain($url)->shouldBe('www.google11.com');
     }
 
     public function it_gets_the_last_part_of_url()
