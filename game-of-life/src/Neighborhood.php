@@ -4,12 +4,17 @@ class Neighborhood
 {
 
     protected $population;
-    protected $matrixSize;
+    private $matrixSize = 0;
 
     function __construct($population, $matrixSize)
     {
         $this->population = $population;
         $this->matrixSize = $matrixSize;
+    }
+
+    public function getMatrixSize()
+    {
+        return $this->matrixSize;
     }
 
     public function isAlive($member)

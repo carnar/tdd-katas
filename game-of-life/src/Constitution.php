@@ -17,7 +17,9 @@ class Constitution
         }
         else
         {
-            return true;
+            $neighbors = $this->neighborhood->countNeighbors($member);
+            
+            return ($neighbors > 1 && $neighbors < 4);
         }
     }
 }

@@ -1,29 +1,32 @@
 <?php
 
 class GameOfLive {
-    
-    public function countNeighbourds(array $population, $member)
+
+    protected $constitution;
+    protected $neighborhood;
+
+    function __construct($constitution, $neighborhood)
     {
-        $neighbourds = -1;
-        
-        list($x, $y) = explode(',', $member);
-
-        for ($i=$x-1; $i <= $x+1; $i++)
-        { 
-             for ($j=$y-1; $j <= $y+1; $j++)
-             { 
-                if(in_array("$i,$j", $population)) $neighbourds++;
-             }       
-        }
-
-        return $neighbourds;
+        $this->constitution = $constitution;
+        $this->neighborhood = $neighborhood;
     }
 
-    public function willDie(array $poblation, $member)
+    public function nextGeneration()
     {
-        $neighbourds = $this->countNeighbourds($poblation, $member);
+        $next = [];
 
-        return ! ( $neighbourds > 1 && $neighbourds < 4);
+        for ($i=1; $i < $this->neighborhood->getMatrixSize(); $i++) 
+        { 
+            for ($j=1; $j < $this->neighborhood->getMatrixSize(); $j++) 
+            { 
+                if($this->constitution->willLive("$i,$j"))
+                {
+                    $next[] = '1,1'; 
+                }
+            }
+        }
+
+        return $next;
     }
 
 }
