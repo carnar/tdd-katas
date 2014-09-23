@@ -1,6 +1,6 @@
 <?php
 
-class GameOfLive {
+class GameOfLife {
 
     protected $constitution;
     protected $neighborhood;
@@ -19,9 +19,11 @@ class GameOfLive {
         { 
             for ($j=1; $j < $this->neighborhood->getMatrixSize(); $j++) 
             { 
-                if($this->constitution->willLive("$i,$j"))
+                $member = "$i,$j";
+
+                if($this->constitution->willLive($member))
                 {
-                    $next[] = '1,1'; 
+                    $next[] = $member; 
                 }
             }
         }
