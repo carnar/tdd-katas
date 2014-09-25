@@ -2,42 +2,88 @@
 
 class MagnetoEffect {
 
+    /**
+     * Magnets in the game
+     *
+     * @var array
+     */
     protected $magnets;
-    protected $radius;
-    protected $matrixSize;
 
-    function __construct($magnets, $radius, $matrixSize)
+    /**
+     * Radius magnets
+     *
+     * @var integer
+     */
+    protected $radius;
+
+    /**
+     * Geometric calculator
+     *
+     * @var GeometricCalculator
+     */
+    protected $calculator;
+
+    function __construct($magnets, $radius, GeometricCalculator $calculator)
     {
         $this->magnets = $magnets;
         $this->radius = $radius;
-        $this->matrixSize = $matrixSize;
+        $this->calculator = $calculator;
     }
 
+    /**
+     * Gets array magnets
+     *
+     * @return array
+     */
     public function getMagnets()
     {
         return $this->magnets;
     }
 
+    /**
+     * Set a new array magnets
+     *
+     * @param [type] $magnets
+     */
     public function setMagnets($magnets)
     {
         $this->magnets = $magnets;
     }
 
-    public function isCoordinate($point)
+    /**
+     * Determinates if magnet reach the target
+     *
+     * @param  string $magnet
+     * @param  string $target
+     * @return boolean
+     */
+    public function isMagnetInRange($magnet, $target)
     {
-        return (bool) preg_match('/\d+,\d+/', $point);
+        $distance = $this->calculator->distanceBetweenCoordinates($magnet, $target);           
+        
+        return ($distance <= $this->radius);
     }
 
-    public function distanceBetweenCoordinates($a, $b)
+    /**
+     * Gets drawing point after magnet effect.
+     *
+     * @param  string $target
+     * @return mixed
+     */
+    public function drawingPoint($target)
     {
-        if( ! $this->isCoordinate($a) && ! $this->isCoordinate($b) ) throw new InvalidArgumentException;
+        $closestMagnet = false;
 
-        $a = explode(',', $a);
-        $b = explode(',', $b);
+        foreach ($this->magnets as $magnet) 
+        {
+            if( ! $this->isMagnetInRange($magnet, $target)) continue;
 
-        $x =  pow(((int) $b[0] -  (int) $a[0]), 2);
-        $y =  pow(((int) $b[1] -  (int) $a[1]), 2);
+            $closestMagnet = ( ! $closestMagnet) 
+                ? $magnet 
+                : $this->calculator->getClosestDistance($closestMagnet, $magnet, $target);
+        }
 
-        return round(sqrt($x + $y), 2);
+        return $closestMagnet;
     }
+
 }

@@ -10,16 +10,15 @@ class MagnetoEffectSpec extends ObjectBehavior {
         $this->shouldHaveType('MagnetoEffect');
     }
 
-    public function let()
+    public function let(\GeometricCalculator $calculator)
     {
         $magnets = [
             '2,4',
             '5,2'
         ];
         $radius = 2;
-        $matrixSize = 5;
 
-        $this->beConstructedWith($magnets, $radius, $matrixSize);
+        $this->beConstructedWith($magnets, $radius, $calculator);
     }
 
     public function it_gets_magnets()
@@ -45,31 +44,74 @@ class MagnetoEffectSpec extends ObjectBehavior {
         ]);
     }
 
-    public function it_validates_a_coordinate()
+    public function it_decides_magent_is_in_range($calculator)
     {
-        $this->isCoordinate('1,1')->shouldBe(true);
+        $magnet = '2,4';
+        $target = '3,2';
+
+        $calculator->distanceBetweenCoordinates($magnet, $target)->willReturn(2);
+        $this->isMagnetInRange($magnet, $target)->shouldBe(true);
     }
 
-    public function it_returns_false_with_invalid_coordinate()
+    public function it_decides_magent_is_not_in_range($calculator)
     {
-        $this->isCoordinate('1')->shouldBe(false);
+        $magnet = '2,4';
+        $target = '3,2';
+
+        $calculator->distanceBetweenCoordinates($magnet, $target)->willReturn(4);
+        $this->isMagnetInRange($magnet, $target)->shouldBe(false);
     }
 
-    public function it_returns_exception_with_invalid_coordinate()
+    public function it_returns_magnet_B_as_closest_magnet_to_target($calculator)
     {
-        $this->shouldThrow('\InvalidArgumentException')->duringDistanceBetweenCoordinates('2', '4');
+        $a = '2,4';
+        $b = '5,2';
+        $target = '3,2';
+        
+        $calculator->distanceBetweenCoordinates($a, $target)->willReturn(5);
+        $calculator->distanceBetweenCoordinates($b, $target)->willReturn(2);
+
+        $this->drawingPoint($target)->shouldBe('5,2');
     }
 
-    public function it_gets_distance_between_two_points()
+    public function it_returns_magnet_A_as_closest_magnet_to_target($calculator)
     {
-        $this->distanceBetweenCoordinates('2,4', '3,2')->shouldBe(2.24);
+        $a = '2,4';
+        $b = '5,2';
+        $target = '3,2';
+        
+        $calculator->distanceBetweenCoordinates($a, $target)->willReturn(2);
+        $calculator->distanceBetweenCoordinates($b, $target)->willReturn(5);
+
+        $this->drawingPoint($target)->shouldBe('2,4');
+    }
+    public function it_does_not_find_magnet_closed($calculator)
+    {
+        $a = '2,4';
+        $b = '5,2';
+        $target = '3,2';
+        
+        $calculator->distanceBetweenCoordinates($a, $target)->willReturn(5);
+        $calculator->distanceBetweenCoordinates($b, $target)->willReturn(3);
+
+        $this->drawingPoint($target)->shouldBe(false);
     }
 
-    public function it_gets_distance_between_other_two_points()
+    public function it_chooses_one_of_two_magnets_with_same_distance_to_target($calculator)
     {
-        $this->distanceBetweenCoordinates('2,2', '4,4')->shouldBe(2.83);
-    }
+        $a = '2,4';
+        $b = '4,4';
+        $target = '3,4';
 
+        $this->setMagnets([$a, $b]);
+        
+        $calculator->distanceBetweenCoordinates($a, $target)->willReturn(1);
+        $calculator->distanceBetweenCoordinates($b, $target)->willReturn(1);
+
+        $calculator->getClosestDistance($a, $b, $target)->willReturn('2,4');
+
+        $this->drawingPoint($target)->shouldBe('2,4');
+    }
 }
 
 
