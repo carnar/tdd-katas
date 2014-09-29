@@ -16,7 +16,7 @@ class PostfixStackTest extends PHPUnit_Framework_TestCase {
         $this->assertEquals(0, $num);
     }
 
-    public function test_add_object_to_stack()
+    public function test_pushing_object_to_stack()
     {
         $num = $this->stack->push(5);
         $this->assertEquals(1, $num);
@@ -25,4 +25,28 @@ class PostfixStackTest extends PHPUnit_Framework_TestCase {
         $this->assertEquals(2, $num);
     }
     
+    public function test_pop_out_last_object_in_the_stack()
+    {
+        $this->stack->push(5);
+        $this->stack->push(2);
+        
+        $number = $this->stack->pop();
+        $this->assertEquals(2, $number);
+
+        $this->stack->push(5);
+        $number = $this->stack->pop();
+
+        $this->assertEquals(5, $number);
+    }
+
+    public function test_release_stack()
+    {
+        $this->stack->push(5);
+        $this->stack->push(2);
+
+        $objects = $this->stack->release();
+        
+        $this->assertEquals(0, $this->stack->count());
+        $this->assertEquals([5,2], $objects);
+    }
 }
