@@ -10,45 +10,45 @@ class PostfixConverter {
         $this->stack = new PostfixStack;
         $this->operatorStack = new PostfixStack;
     }
-     
-    // public function convert($expersion)
-    // {
-    //     preg_match('/\d+|\+/', $expersion, $parts);
 
-    //     foreach ($parts as $part) 
-    //     {
-    //         var_dump($part);
-    //         if(is_int($part))
-    //         {
-    //             $this->stack->push($part);
-    //         }
-    //         else
-    //         {
-    //             $this->operatorStack->push($part);
-    //         }
-    //     }
-
-    //     return implode(' ', $this->stack->release());
-    // }
-
-    public function explode($expression)
+    public function explode(&$expression)
     {
         while(strlen($expression) > 0)
         {
-            if(preg_match('/^\d+/', $expression, $match))
-            {
-                $this->stack->push($match);
-            }
-            elseif(preg_match('/^(\+|-|\*|\/)/', $expression, $match))
-            {
+            $component = $this->nextExpressionComponent($expression);
 
+            if($size = strlen($component))
+            {
+                $expression = substr($expression, $size, strlen($expression));
             }
-
+            else
+            {
+                $expression = substr($expression, 1, strlen($expression));   
+            }
+            $this->explode($expression);    
         }
-        $this->stack->push('3');
-        $this->operatorStack->push('+');
     }
 
+    public function nextExpressionComponent($expression)
+    {
+        if(preg_match('/^\d+/', $expression, $match))
+        {
+            $this->stack->push($match[0]);
+        }
+        elseif(preg_match('/^(\+|-|\*|\/)/', $expression, $match))
+        {
+            $this->operatorStack->push($match[0]);
+        }
+
+        return isset($match[0]) ? $match[0] : false;
+    }
+
+    /**
+     * Convert arithmetic expression to postfix notation
+     *
+     * @param  string $expression
+     * @return string
+     */
     public function convert($expression)
     {
         $result = '';
