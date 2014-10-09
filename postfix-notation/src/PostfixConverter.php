@@ -3,6 +3,7 @@
 class PostfixConverter {
 
     protected $stack;
+    
     protected $precedence = [
         '+' => 1,
         '-' => 1,
@@ -15,15 +16,45 @@ class PostfixConverter {
         $this->stack = $stack;
     }
 
-    public function explode(&$expression)
+    /**
+     * Convert arithmetic expression to postfix notation
+     *
+     * @param  string $expression
+     * @return string
+     */
+    public function convert($expression)
+    {
+        $this->evaluate($expression);
+        
+        return implode(' ', $this->stack->release());
+    }
+
+    public function evaluate(&$expression)
     {
         while(strlen($expression) > 0)
         {
             $component = $this->extractNextComponentExpression($expression);
 
+            $this->applyRules($component);
+
             $expression = $this->deleteComponentFromExpression($expression, $component);
 
-            $this->explode($expression);    
+            $this->evaluate($expression);    
+        }
+    }
+
+    public function applyRules($component)
+    {
+        if( ! empty($component))
+        {
+            if(preg_match('/^\d+$/', $component, $match))
+            {
+                $this->applyNumberRules($match[0]);
+            }
+            elseif($match = $this->nextIsOperator($component))
+            {
+                $this->stack->push($match[0]);
+            }               
         }
     }
 
@@ -34,22 +65,7 @@ class PostfixConverter {
 
     public function extractNextComponentExpression($expression)
     {
-        if(strlen($expression))
-        {
-            if(preg_match('/^\d+/', $expression, $match))
-            {
-                // $this->stack->push($match[0]);
-                $this->applyNumberRules($match[0]);
-            }
-            elseif($match = $this->nextIsOperator($expression))
-            {
-                $this->stack->push($match[0]);
-            }            
-            else
-            {
-                $match[0] = $expression[0];
-            }
-        }
+        preg_match('/^(\d+|(\+|-|\*|\/))/', $expression, $match);
 
         return isset($match[0]) ? $match[0] : false;
     }
@@ -126,19 +142,6 @@ class PostfixConverter {
         $result = preg_match('/^(\+|-|\*|\/)/', $expression, $match);
 
         return (isset($match[0])) ? $match[0] : $result;
-    }
-
-    /**
-     * Convert arithmetic expression to postfix notation
-     *
-     * @param  string $expression
-     * @return string
-     */
-    public function convert($expression)
-    {
-        $this->explode($expression);
-        
-        return implode(' ', $this->stack->release());
     }
 
     public function hasMorePrecedence($base, $target)
