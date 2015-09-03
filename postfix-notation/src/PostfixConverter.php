@@ -2,17 +2,13 @@
 
 class PostfixConverter {
 
-    protected $stack;
-    
-    protected $precedence = [
-        '+' => 1,
-        '-' => 1,
-        '*' => 2,
-        '/' => 2
-    ];
+    protected $expressionManager;
 
-    function __construct(PostfixStack $stack)
+    protected $stack;
+
+    function __construct(ArithmeticExpressionManager $expressionManager, PostfixStack $stack)
     {
+        $this->expressionManager = $expressionManager;
         $this->stack = $stack;
     }
 
@@ -33,11 +29,11 @@ class PostfixConverter {
     {
         while(strlen($expression) > 0)
         {
-            $component = $this->extractNextComponentExpression($expression);
+            $component = $this->expressionManager->getNextComponent($expression);
 
             $this->applyRules($component);
 
-            $expression = $this->deleteComponentFromExpression($expression, $component);
+            $expression = $this->expressionManager->deleteComponent($expression, $component);
 
             $this->evaluate($expression);    
         }
@@ -51,23 +47,11 @@ class PostfixConverter {
             {
                 $this->applyNumberRules($match[0]);
             }
-            elseif($match = $this->nextIsOperator($component))
+            elseif($match = $this->expressionManager->isOperator($component))
             {
                 $this->stack->push($match[0]);
             }               
         }
-    }
-
-    public function deleteComponentFromExpression($expression, $component)
-    {
-        return substr($expression, strlen($component), strlen($expression));   
-    }
-
-    public function extractNextComponentExpression($expression)
-    {
-        preg_match('/^(\d+|(\+|-|\*|\/))/', $expression, $match);
-
-        return isset($match[0]) ? $match[0] : false;
     }
 
     public function applyNumberRules($number)
@@ -89,25 +73,6 @@ class PostfixConverter {
         }
     }
 
-    public function resolveOperatorsPrecedence($number)
-    {
-        $last = $this->stack->pop();
-        $previous = $this->stack->pop();
-
-        if($this->hasMorePrecedence($previous, $last))
-        {
-            $this->stack->push($number);
-            $this->stack->push($last);
-            $this->stack->push($previous);
-        }
-        else
-        {
-            $this->stack->push($previous);                        
-            $this->stack->push($number);
-            $this->stack->push($last);
-        }
-    }
-
     public function isTheLastAnOperator()
     {
         if($this->stack->count() >= 1)
@@ -116,7 +81,7 @@ class PostfixConverter {
 
             $this->stack->push($last);
 
-            return ($this->nextIsOperator($last));
+            return ($this->expressionManager->isOperator($last));
         }
 
         return false;
@@ -132,24 +97,27 @@ class PostfixConverter {
             $this->stack->push($previous);
             $this->stack->push($last);
 
-            return ($this->nextIsOperator($last) && $this->nextIsOperator($previous));
+            return ($this->expressionManager->isOperator($last) && $this->expressionManager->isOperator($previous));
         }
         return false;
     }
 
-    public function nextIsOperator($expression)
+    public function resolveOperatorsPrecedence($number)
     {
-        $result = preg_match('/^(\+|-|\*|\/)/', $expression, $match);
+        $last = $this->stack->pop();
+        $previous = $this->stack->pop();
 
-        return (isset($match[0])) ? $match[0] : $result;
+        if($this->expressionManager->hasMorePrecedence($previous, $last))
+        {
+            $this->stack->push($number);
+            $this->stack->push($last);
+            $this->stack->push($previous);
+        }
+        else
+        {
+            $this->stack->push($previous);                        
+            $this->stack->push($number);
+            $this->stack->push($last);
+        }
     }
-
-    public function hasMorePrecedence($base, $target)
-    {
-        if( ! array_key_exists($base, $this->precedence) || ! array_key_exists($target, $this->precedence))
-            return false;
-        
-        return ($this->precedence[$target] > $this->precedence[$base]);
-    }
-
 }

@@ -6,7 +6,9 @@ class PostfixConverterTest extends PHPUnit_Framework_TestCase {
 
     public function setUp()
     {
-        $this->converter = new PostfixConverter(new PostfixStack);
+        $this->converter = new PostfixConverter(
+                new ArithmeticExpressionManager, new PostfixStack
+            );
     }
 
     public function test_if_all_are_ok()
@@ -19,13 +21,6 @@ class PostfixConverterTest extends PHPUnit_Framework_TestCase {
         $postfix = $this->converter->convert('5');
 
         $this->assertEquals('5', $postfix);
-    }
-
-    public function test_if_is_an_operator()
-    {
-        $expression = '+2';
-
-        $this->assertEquals('+', $this->converter->nextIsOperator($expression)[0]);
     }
 
     public function test_convert_add_operation()
@@ -62,18 +57,6 @@ class PostfixConverterTest extends PHPUnit_Framework_TestCase {
         $postfix = $this->converter->convert('2+3*4');
 
         $this->assertEquals('2 3 4 * +', $postfix);
-    }
-
-    public function test_eval_operator_precedence()
-    {
-        $base = '*';
-        $target = '+';
-
-        $result = $this->converter->hasMorePrecedence($base, $target);
-        $this->assertEquals(false, $result);
-
-        $result = $this->converter->hasMorePrecedence($target, $base);
-        $this->assertEquals(true, $result);
     }
 
 }
